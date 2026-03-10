@@ -6,6 +6,7 @@ trigger:
 
 pool:
   vmImage: 'windows-latest'   # Use Windows agent for .NET builds
+  name: Default
 
 variables:
   buildConfiguration: 'Release'
