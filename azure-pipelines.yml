@@ -1,63 +1,45 @@
+
 # azure-pipelines.yml
 trigger:
   branches:
     include:
-      - master   # Run pipeline when code is pushed to main
+      - development   # Run pipeline when code is pushed to main
 
 pool:
   vmImage: 'windows-latest'   # Use Windows agent for .NET builds
-
 variables:
   buildConfiguration: 'Release'
 
 steps:
-  - task: UseDotNet@2
+  - task: NuGetToolInstaller@1
+  - task: NuGetCommand@2
     inputs:
-      packageType: 'sdk'
-      version: '8.0.x'   # Specify .NET SDK version
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+      restoreSolution: '**/*.sln'
 
-  - script: dotnet restore
-    displayName: 'Restore NuGet packages'
+    # inputs:
+    #   packageType: 'sdk'
+    #   version: '8.0.x'   # Specify .NET SDK version
+    #   installationPath: $(Agent.ToolsDirectory)/dotnet
 
-  - script: dotnet build --configuration $(buildConfiguration)
-    displayName: 'Build solution'
+  # - script: dotnet restore
+  #   displayName: 'Restore NuGet packages'
 
-  - script: dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal
-    displayName: 'Run unit tests'
+  # - script: dotnet build --configuration $(buildConfiguration)
+  #   displayName: 'Build solution'
 
-  - task: PublishBuildArtifacts@1
+  # - script: dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal
+  #   displayName: 'Run unit tests'
+
+  - task: VSBuild@1
     inputs:
-      PathtoPublish: 'bin/Release'
-      ArtifactName: 'drop'
-      publishLocation: 'Container'
-
-
-- stage: Deploy
-    displayName: 'Deploy to Azure Web App'
-    dependsOn: Build
-    condition: succeeded()
-jobs:
-  - job: DeployWebApp
-        steps:
-          - task: AzureWebApp@1
-            inputs:
-              azureSubscription: '<Your-Service-Connection-Name>'
-              appName: 'tinyResourceGroup'
-              appType: 'webApp'
-              package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-
-  - script: dotnet publish --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)
-    displayName: 'Publish project'
-
-  - task: ArchiveFiles@2
+      solution: '**/*.sln'
+      msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfiguration=true /p:PackageLocation=$(Build.ArtifactStagingDirectory)'
+      platform: 'Any CPU'
+      configuration: 'Release'
+  - task: VSTest@2
     inputs:
-      rootFolderOrFile: '$(Build.ArtifactStagingDirectory)'
-      includeRootFolder: false
-      archiveType: 'zip'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
-      replaceExistingArchive: true
-
+      platform: 'Any CPU'
+      configuration: 'Release'
   - task: PublishBuildArtifacts@1
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
