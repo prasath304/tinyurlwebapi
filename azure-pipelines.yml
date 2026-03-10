@@ -2,7 +2,7 @@
 trigger:
   branches:
     include:
-      - master   # Run pipeline when code is pushed to main
+      - default   # Run pipeline when code is pushed to main
 
 pool:
   vmImage: 'windows-latest'   # Use Windows agent for .NET builds
