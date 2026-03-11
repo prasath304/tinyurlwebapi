@@ -1,3 +1,4 @@
+
 # azure-pipelines.yml
 trigger:
   branches:
@@ -17,21 +18,7 @@ steps:
     inputs:
       restoreSolution: '**/*.sln'
 
-    # inputs:
-    #   packageType: 'sdk'
-    #   version: '8.0.x'   # Specify .NET SDK version
-    #   installationPath: $(Agent.ToolsDirectory)/dotnet
-
-  # - script: dotnet restore
-  #   displayName: 'Restore NuGet packages'
-
-  # - script: dotnet build --configuration $(buildConfiguration)
-  #   displayName: 'Build solution'
-
-  # - script: dotnet test --configuration $(buildConfiguration) --no-build --verbosity normal
-  #   displayName: 'Run unit tests'
-
-  - task: VSBuild@1
+   - task: VSBuild@1
     inputs:
       solution: '**/*.sln'
       msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfiguration=true /p:PackageLocation=$(Build.ArtifactStagingDirectory)'
